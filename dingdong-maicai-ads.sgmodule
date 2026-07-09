@@ -4,14 +4,16 @@
 
 [Rule]
 DOMAIN,trackercollect.ddxq.mobi,REJECT
+DOMAIN,trackerfeed.ddxq.mobi,REJECT
+DOMAIN,monitorcollect.ddxq.mobi,REJECT
 
 [URL Rewrite]
 ^https?:\/\/[^\/]*ddxq\.(mobi|com)\/.*(splash|startup|launch|advert|advertise|popup|pop_up|ad_config|adconf|adzone) - reject-200
 ^https?:\/\/[^\/]*(ddxq|dingdongxiaoqu)\.(mobi|com)\/.*\/(ad|ads|advert|advertise)(\/|\?|$) - reject-200
 
 [Script]
-叮咚买菜_统一网关净化 = type=http-response,requires-body=1,max-size=0,pattern=^https?:\/\/pubgw\.api\.ddxq\.mobi\/,script-path=https://cdn.jsdelivr.net/gh/Invictus0127/surge-modules@b1e42ad/dingdong-maicai-ads.js
-叮咚买菜_响应体净化 = type=http-response,requires-body=1,max-size=0,pattern=^https?:\/\/[^\/]*(ddxq|dingdongxiaoqu)\.(mobi|com)\/.*(home|index|config|page|tab|banner|popup|splash|startup|launch|advert|marketing|activity|promotion),script-path=https://cdn.jsdelivr.net/gh/Invictus0127/surge-modules@b1e42ad/dingdong-maicai-ads.js
+叮咚买菜_统一网关净化 = type=http-response,requires-body=1,max-size=0,pattern=^https?:\/\/pubgw\.api\.ddxq\.mobi\/,script-path=https://cdn.jsdelivr.net/gh/Invictus0127/surge-modules@35c9f2d/dingdong-maicai-ads.js
+叮咚买菜_响应体净化 = type=http-response,requires-body=1,max-size=0,pattern=^https?:\/\/[^\/]*(ddxq|dingdongxiaoqu)\.(mobi|com)\/.*(home|index|config|page|tab|banner|popup|splash|startup|launch|advert|marketing|activity|promotion|recall|hesitate|degrade),script-path=https://cdn.jsdelivr.net/gh/Invictus0127/surge-modules@35c9f2d/dingdong-maicai-ads.js
 
 [MITM]
-hostname = %APPEND% pubgw.api.ddxq.mobi,*.api.ddxq.mobi,api.ddxq.mobi,*.m.ddxq.mobi,m.ddxq.mobi,*.bsapi.ddxq.mobi,bsapi.ddxq.mobi,*.solar.ddxq.mobi,solar.ddxq.mobi,trackercollect.ddxq.mobi,*.ddxq.mobi,ddxq.mobi,*.ddxq.com,*.dingdongxiaoqu.com,*.dingdongxiaoqu.mobi
+hostname = %APPEND% pubgw.api.ddxq.mobi,*.api.ddxq.mobi,api.ddxq.mobi,*.m.ddxq.mobi,m.ddxq.mobi,*.bsapi.ddxq.mobi,bsapi.ddxq.mobi,*.solar.ddxq.mobi,solar.ddxq.mobi,trackercollect.ddxq.mobi,trackerfeed.ddxq.mobi,monitorcollect.ddxq.mobi,*.ddxq.mobi,ddxq.mobi,*.ddxq.com,*.dingdongxiaoqu.com,*.dingdongxiaoqu.mobi
