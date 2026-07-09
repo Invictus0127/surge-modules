@@ -9,6 +9,7 @@ try {
 const keyBlock = /(^|_)(ad|ads|advert|advertise|advertisement|splash|popup|pop_up|pop|launch|startup|float|floating|redpacket|red_packet|bubble|guide|interstitial|open_screen|openscreen)(_|$)/i;
 const nameBlock = /(广告|开屏|弹窗|浮层|浮窗|推荐弹层|营销弹窗|新人弹窗|开屏页|启动页|运营位|活动浮层)/;
 const sceneBlock = /(splash|startup|launch|ad|advert|popup|float|interstitial|openScreen|open_screen)/i;
+const urlBlock = /(splash|startup|launch|open[_-]?screen|advert|advertise|popup|pop[_-]?up|ad[_-]?config|adconf|adzone)/i;
 
 const preserveKeys = new Set([
   "address",
@@ -40,7 +41,7 @@ function shouldDropKey(key) {
 
 function textOf(value) {
   if (!value || typeof value !== "object") return "";
-  const keys = ["type", "scene", "bizType", "biz_type", "position", "code", "name", "title", "desc", "content"];
+  const keys = ["type", "scene", "bizType", "biz_type", "position", "code", "name", "title", "desc", "content", "url", "jump_url", "link", "link_url", "image", "image_url", "img", "pic", "pic_url"];
   return keys.map((key) => value[key]).filter((item) => typeof item === "string").join(" ");
 }
 
@@ -54,7 +55,7 @@ function shouldDropItem(item) {
 function shouldDropObject(value) {
   if (!value || typeof value !== "object") return false;
   const text = textOf(value);
-  return sceneBlock.test(text) || nameBlock.test(text);
+  return sceneBlock.test(text) || nameBlock.test(text) || urlBlock.test(text);
 }
 
 function clean(value, parentKey = "") {
