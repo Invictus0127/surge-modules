@@ -1,0 +1,23 @@
+#!name=百度网盘轻量去广告
+#!desc=轻量拦截百度网盘常见广告、预配置和推广域名。尽量不碰下载链路，避免影响文件下载。
+#!system=ios
+
+[Rule]
+DOMAIN,mobads.baidu.com,REJECT
+DOMAIN,mobads-logs.baidu.com,REJECT
+DOMAIN,mobads-pre-config.cdn.bcebos.com,REJECT
+DOMAIN,afd.baidu.com,REJECT
+DOMAIN,als.baidu.com,REJECT
+DOMAIN,miniapp-ad.cdn.bcebos.com,REJECT
+DOMAIN-SUFFIX,union.baidu.com,REJECT
+DOMAIN-SUFFIX,union.baidu.cn,REJECT
+DOMAIN-SUFFIX,pos.baidu.com,REJECT
+DOMAIN-SUFFIX,cpro.baidu.com,REJECT
+
+[URL Rewrite]
+^https?:\/\/pan\.baidu\.com\/act\/ - reject
+^https?:\/\/pan\.baidu\.com\/api\/act\/ - reject
+^https?:\/\/pan\.baidu\.com\/rest\/.+\/pcs\/ad - reject
+
+[MITM]
+hostname = %APPEND% pan.baidu.com,mobads.baidu.com,mobads-pre-config.cdn.bcebos.com,miniapp-ad.cdn.bcebos.com

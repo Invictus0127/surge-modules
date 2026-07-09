@@ -1,0 +1,14 @@
+#!name=闲鱼去广告
+#!desc=由墨鱼 GoofishAds 规则转换为 Surge 模块。包含开屏、搜索、首页、我的页和推荐流的广告清理。
+#!system=ios
+
+[URL Rewrite]
+^https?:\/\/(g-)?acs\.m\.goofish\.com\/gw\/mtop.*splash\.ads - reject-200
+^https?:\/\/(g-)?acs\.m\.goofish\.com\/gw\/mtop\.idle\.ad\.expose - reject-200
+
+[Script]
+闲鱼_响应体净化 = type=http-response,requires-body=1,max-size=0,pattern=^https?:\/\/(g-)?acs\.m\.goofish\.com\/gw\/(mtop\.taobao\.idle\.user\.strategy\.list|mtop\.taobao\.idlehome\.home\.circle\.list|mtop\.taobao\.idlehome\.home\.nextfresh|mtop\.taobao\.idlemtopsearch\.search\.shade|mtop\.taobao\.idlemtopsearch\.item\.search\.activate|mtop\.taobao\.idlemtopsearch\.search\.discover|mtop\.idle\.user\.page\.my\.adapter|mtop\.taobao\.idle\.item\.buy\.feeds|mtop\.taobao\.idle\.local\.home|mtop\.taobao\.idlemtopsearch\.search|mtop\.taobao\.idle\.item\.recommend),script-path=https://cdn.jsdelivr.net/gh/Invictus0127/surge-modules@main/goofish-ads.js
+闲鱼_AMDC处理 = type=http-response,requires-body=1,max-size=0,pattern=^http:\/\/[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+){1,4}(:\d+)?\/amdc\/mobileDispatch,script-path=https://cdn.jsdelivr.net/gh/ddgksf2013/Scripts@master/amdc.js
+
+[MITM]
+hostname = %APPEND% acs.m.goofish.com,g-acs.m.goofish.com

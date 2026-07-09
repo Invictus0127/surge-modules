@@ -1,0 +1,10 @@
+#!name=Bilibili漫画去广告
+#!desc=由墨鱼 BiliBiliComicsAds 规则转换为 Surge 模块。清理开屏、活动弹窗、Banner、营销入口、搜索推荐和红点。
+#!system=ios
+
+[Script]
+Bilibili漫画_响应体净化 = type=http-response,requires-body=1,max-size=0,pattern=^https:\/\/manga\.bilibili\.com\/twirp\/(comic|user|search|line)\.v\d\.,script-path=https://cdn.jsdelivr.net/gh/Invictus0127/surge-modules@main/bilibili-comics-ads.js
+Bilibili漫画_主页净化 = type=http-response,requires-body=1,max-size=0,pattern=^https:\/\/manga\.bilibili\.com\/twirp\/comic\.v\d\.Home\/HomeFeed,script-path=https://cdn.jsdelivr.net/gh/Invictus0127/surge-modules@main/bilibili-comics-ads.js
+
+[MITM]
+hostname = %APPEND% manga.bilibili.com
