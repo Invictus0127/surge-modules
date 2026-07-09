@@ -1,5 +1,5 @@
 #!name=叮咚买菜去广告
-#!desc=叮咚买菜轻量去广告模块。清理开屏、弹窗、首页广告位和常见营销浮层，尽量不影响下单、购物车和支付。
+#!desc=叮咚买菜强力去广告模块。全域清理叮咚 JSON 响应里的开屏、弹窗、营销浮层、召回和监控配置，尽量保留商品、购物车和下单字段。
 #!system=ios
 
 [Rule]
@@ -8,12 +8,13 @@ DOMAIN,trackerfeed.ddxq.mobi,REJECT
 DOMAIN,monitorcollect.ddxq.mobi,REJECT
 
 [URL Rewrite]
+^https?:\/\/(trackercollect|trackerfeed|monitorcollect)\.ddxq\.mobi\/ - reject-200
+^https?:\/\/[^\/]*(ddxq|dingdongxiaoqu)\.(mobi|com)\/.*(collect|monitor|tracker|trace|log|stat|report|bury|exposure) - reject-200
 ^https?:\/\/[^\/]*ddxq\.(mobi|com)\/.*(splash|startup|launch|advert|advertise|popup|pop_up|ad_config|adconf|adzone) - reject-200
 ^https?:\/\/[^\/]*(ddxq|dingdongxiaoqu)\.(mobi|com)\/.*\/(ad|ads|advert|advertise)(\/|\?|$) - reject-200
 
 [Script]
-叮咚买菜_统一网关净化 = type=http-response,requires-body=1,max-size=0,pattern=^https?:\/\/pubgw\.api\.ddxq\.mobi\/,script-path=https://cdn.jsdelivr.net/gh/Invictus0127/surge-modules@35c9f2d/dingdong-maicai-ads.js
-叮咚买菜_响应体净化 = type=http-response,requires-body=1,max-size=0,pattern=^https?:\/\/[^\/]*(ddxq|dingdongxiaoqu)\.(mobi|com)\/.*(home|index|config|page|tab|banner|popup|splash|startup|launch|advert|marketing|activity|promotion|recall|hesitate|degrade),script-path=https://cdn.jsdelivr.net/gh/Invictus0127/surge-modules@35c9f2d/dingdong-maicai-ads.js
+叮咚买菜_全域响应净化 = type=http-response,requires-body=1,max-size=0,pattern=^https?:\/\/[^\/]*(ddxq|dingdongxiaoqu)\.(mobi|com)\/,script-path=https://cdn.jsdelivr.net/gh/Invictus0127/surge-modules@c555584/dingdong-maicai-ads.js
 
 [MITM]
 hostname = %APPEND% pubgw.api.ddxq.mobi,*.api.ddxq.mobi,api.ddxq.mobi,*.m.ddxq.mobi,m.ddxq.mobi,*.bsapi.ddxq.mobi,bsapi.ddxq.mobi,*.solar.ddxq.mobi,solar.ddxq.mobi,trackercollect.ddxq.mobi,trackerfeed.ddxq.mobi,monitorcollect.ddxq.mobi,*.ddxq.mobi,ddxq.mobi,*.ddxq.com,*.dingdongxiaoqu.com,*.dingdongxiaoqu.mobi
