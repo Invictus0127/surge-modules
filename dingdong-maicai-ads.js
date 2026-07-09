@@ -1,3 +1,4 @@
+const url = $request.url;
 let obj;
 
 try {
@@ -6,21 +7,26 @@ try {
   $done({});
 }
 
-const keyBlock = /(^|_)(ad|ads|advert|advertise|advertisement|splash|popup|pop_up|pop|launch|startup|float|floating|redpacket|red_packet|bubble|guide|interstitial|open_screen|openscreen)(_|$)/i;
-const nameBlock = /(广告|开屏|弹窗|浮层|浮窗|推荐弹层|营销弹窗|新人弹窗|开屏页|启动页|运营位|活动浮层)/;
-const sceneBlock = /(splash|startup|launch|ad|advert|popup|float|interstitial|openScreen|open_screen)/i;
-const urlBlock = /(splash|startup|launch|open[_-]?screen|advert|advertise|popup|pop[_-]?up|ad[_-]?config|adconf|adzone)/i;
+const keyBlock = /(^|_)(ad|ads|advert|advertise|advertisement|splash|popup|pop_up|pop|launch|startup|float|floating|redpacket|red_packet|bubble|guide|interstitial|open_screen|openscreen|recall|hesitate|material|materials|marketing|promotion|operate|operation|activity|resource|resources|dialog|window|layer|toast|skin|pendant|new_user|newer)(_|$)/i;
+const nameBlock = /(广告|开屏|弹窗|浮层|浮窗|推荐弹层|营销弹窗|新人弹窗|开屏页|启动页|运营位|活动浮层|召回|犹豫|挽留|引导|挂件|皮肤|红包雨|营销|活动)/;
+const sceneBlock = /(splash|startup|launch|ad|advert|popup|float|interstitial|openScreen|open_screen|recall|hesitate|marketing|promotion|operation|activity|pendant|skin|newUser|new_user)/i;
+const urlBlock = /(splash|startup|launch|open[_-]?screen|advert|advertise|popup|pop[_-]?up|ad[_-]?config|adconf|adzone|marketing|promotion|activity|recall|hesitate)/i;
+const aggressivePath = /(getLogRecallConfig|hesitateUser\/getRule|degrade\/config|splash|startup|launch|advert|popup|marketing|promotion|activity|recall|hesitate)/i;
 
 const preserveKeys = new Set([
   "address",
   "cart",
+  "carts",
   "order",
   "orders",
   "payment",
   "pay",
   "sku",
+  "skus",
   "spu",
+  "spus",
   "goods",
+  "good",
   "product",
   "products",
   "coupon",
@@ -29,64 +35,144 @@ const preserveKeys = new Set([
   "price",
   "stock",
   "delivery",
-  "invoice"
+  "invoice",
+  "shop",
+  "store",
+  "station",
+  "category",
+  "categories",
+  "search",
+  "keyword",
+  "keywords"
 ]);
 
-function shouldDropKey(key) {
-  if (!key) return false;
-  const normalized = String(key).replace(/[A-Z]/g, (m) => `_${m.toLowerCase()}`).toLowerCase();
-  if (preserveKeys.has(normalized)) return false;
-  return keyBlock.test(normalized);
+function normalizeKey(key) {
+  return String(key || "")
+    .replace(/[A-Z]/g, (match) => `_${match.toLowerCase()}`)
+    .replace(/[-\s]+/g, "_")
+    .toLowerCase();
+}
+
+function emptyFor(value) {
+  if (Array.isArray(value)) return [];
+  if (value && typeof value === "object") return {};
+  if (typeof value === "boolean") return false;
+  if (typeof value === "number") return 0;
+  return "";
+}
+
+function shouldDropKey(key, aggressive = false) {
+  const normalized = normalizeKey(key);
+  if (!normalized || preserveKeys.has(normalized)) return false;
+  if (keyBlock.test(normalized)) return true;
+  if (aggressive && /(config|conf|rule|rules|strategy|strategies|template|templates|display|displayable|show|visible|enable|enabled)/i.test(normalized)) return true;
+  return false;
 }
 
 function textOf(value) {
   if (!value || typeof value !== "object") return "";
-  const keys = ["type", "scene", "bizType", "biz_type", "position", "code", "name", "title", "desc", "content", "url", "jump_url", "link", "link_url", "image", "image_url", "img", "pic", "pic_url"];
+  const keys = [
+    "type",
+    "scene",
+    "bizType",
+    "biz_type",
+    "position",
+    "code",
+    "name",
+    "title",
+    "desc",
+    "content",
+    "url",
+    "jump_url",
+    "jumpUrl",
+    "schema",
+    "scheme",
+    "link",
+    "link_url",
+    "linkUrl",
+    "image",
+    "image_url",
+    "imageUrl",
+    "img",
+    "imgUrl",
+    "pic",
+    "pic_url",
+    "picUrl"
+  ];
   return keys.map((key) => value[key]).filter((item) => typeof item === "string").join(" ");
 }
 
-function shouldDropItem(item) {
+function shouldDropItem(item, aggressive = false) {
   if (!item || typeof item !== "object") return false;
   const text = textOf(item);
-  if (sceneBlock.test(text) || nameBlock.test(text)) return true;
-  return Object.keys(item).some((key) => shouldDropKey(key) && !preserveKeys.has(key.toLowerCase()));
+  if (sceneBlock.test(text) || nameBlock.test(text) || urlBlock.test(text)) return true;
+  const keys = Object.keys(item);
+  if (keys.some((key) => shouldDropKey(key, aggressive))) return true;
+  if (aggressive && keys.some((key) => /(image|img|pic|schema|scheme|jump|link|url)/i.test(key)) && keys.some((key) => /(title|name|content|desc|button|btn|type|scene)/i.test(key))) return true;
+  return false;
 }
 
-function shouldDropObject(value) {
-  if (!value || typeof value !== "object") return false;
-  const text = textOf(value);
-  return sceneBlock.test(text) || nameBlock.test(text) || urlBlock.test(text);
-}
-
-function clean(value, parentKey = "") {
+function clean(value, parentKey = "", aggressive = false) {
   if (Array.isArray(value)) {
-    if (shouldDropKey(parentKey)) return [];
+    if (shouldDropKey(parentKey, aggressive)) return [];
     return value
-      .filter((item) => !shouldDropItem(item))
-      .map((item) => clean(item, parentKey));
+      .filter((item) => !shouldDropItem(item, aggressive))
+      .map((item) => clean(item, parentKey, aggressive));
   }
 
   if (!value || typeof value !== "object") return value;
 
   for (const key of Object.keys(value)) {
-    if (shouldDropKey(key)) {
-      if (Array.isArray(value[key])) value[key] = [];
-      else if (value[key] && typeof value[key] === "object") value[key] = {};
-      else if (typeof value[key] === "boolean") value[key] = false;
-      else if (typeof value[key] === "number") value[key] = 0;
-      else value[key] = "";
+    if (shouldDropKey(key, aggressive)) {
+      value[key] = emptyFor(value[key]);
       continue;
     }
 
-    if (shouldDropObject(value[key])) {
+    if (shouldDropItem(value[key], aggressive)) {
       delete value[key];
       continue;
     }
 
-    value[key] = clean(value[key], key);
+    value[key] = clean(value[key], key, aggressive);
   }
 
   return value;
 }
 
-$done({ body: JSON.stringify(clean(obj)) });
+function disableConfig(value) {
+  if (!value || typeof value !== "object") return value;
+  for (const key of Object.keys(value)) {
+    const normalized = normalizeKey(key);
+    if (/^(enable|enabled|is_enable|is_enabled|switch|show|display|visible|need_show|should_show|valid|open)$/.test(normalized)) {
+      value[key] = false;
+      continue;
+    }
+    if (/^(count|times|interval|duration|delay|frequency|freq)$/.test(normalized)) {
+      value[key] = 0;
+      continue;
+    }
+    value[key] = clean(value[key], key, true);
+  }
+  return value;
+}
+
+if (/getLogRecallConfig/i.test(url)) {
+  obj.data = disableConfig(obj.data || {});
+  obj.data.configs = [];
+  obj.data.list = [];
+  obj.data.rules = [];
+}
+
+if (/hesitateUser\/getRule/i.test(url)) {
+  obj.data = disableConfig(obj.data || {});
+  obj.data.rules = [];
+  obj.data.ruleList = [];
+  obj.data.popup = {};
+}
+
+if (/degrade\/config/i.test(url)) {
+  obj.data = clean(obj.data || {}, "data", true);
+}
+
+const aggressive = aggressivePath.test(url);
+$done({ body: JSON.stringify(clean(obj, "", aggressive)) });
